@@ -1,0 +1,6 @@
+[staging_servers]
+172.20.90.41
+
+[staging_ALL:children]
+staging_servers
+
