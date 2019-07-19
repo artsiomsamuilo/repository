@@ -5,22 +5,53 @@
    vars:
      source_file: ./MyWebSite/index.html
      destin_file: /var/www/html
-
+ 
+   
 
    tasks:
-   - name: Install Apache Server
-     apt : name=apache2 state=latest
+   
+   - name: Check OS Version
+     debug: var="ansible_os_family"
+   
 
-   - name: Copy my homepage to servers
-     copy: src={{ source_file }} dest={{ destin_file }} mode=0555
-     notify: Restart Apache
+   - block: #====Block for RedHat===
+   
+     - name: Install Apache on CentOS servers
+       yum : name=httpd status=latest
+       
 
-   - name: Start Apache and enable on boot
-     service: name=apache2 state=started enabled=yes
+
+     - name: Start Apache and enable on boot
+       service: name=httpd state=started enabled=yes
+      
+
+     - name: Copy my homepage to servers
+       copy: src={{ source_file }} dest={{ destin_file }} mode=0555
+       notify: Restart Apache RedHat
+     
+     when: ansible_os_family == "RedHat"
+
+
+   - block: #====Block for Debian==== 
+     
+     - name: Install Apache Server on Ubuntu servers
+       apt : name=apache2 state=latest
+
+     - name: Start Apache and enable on boot
+       service: name=apache2 state=started enabled=yes
+      
+     - name: Copy my homepage to servers
+       copy: src={{ source_file }} dest={{ destin_file }} mode=0555
+       notify: Restart Apache Debian
+
+     when: ansible_os_family == "Debian"
    
    handlers:
-   - name: Restart Apache
+   - name: Restart Apache on Debian
      service: name=apache2 state=restarted
-     
+   
+   - name: Restart Apache on RedHat  
+     service: name=apache2 state=restarted
+
 ...
 
