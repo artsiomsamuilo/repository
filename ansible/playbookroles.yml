@@ -1,6 +1,6 @@
 ---
  - name: Install Apache Web Server
-   hosts: all
+   hosts: "{{ myhosts }}"
 
    roles:
     - { role: deploy_apache_web, when: ansible_system == 'Linux' }       
