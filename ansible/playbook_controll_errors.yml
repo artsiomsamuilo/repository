@@ -1,0 +1,25 @@
+---
+- name: Controll Errors
+  hosts: all
+  any_errors_fatal: true #stop playbok if there is an error 
+
+  tasks:
+  
+  - name: Task 1
+    apt: name=tree state=lates
+    ignore_errors: yes
+
+  - name: Task 2
+    shell: echo Hello!
+    register: results 
+    #    failed_when: "'Hello' in results.stdout"
+    failed_when: results.rc == 0
+
+  - debug:
+      var: results     
+  
+  
+  - name: Task 3
+    shell: echo Privet!
+
+
