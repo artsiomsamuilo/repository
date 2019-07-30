@@ -15,6 +15,7 @@ pipeline {
         steps {
          echo "==== start building image ===="
          dir ('docker') {
+	   sh 'whoami'	 
            sh 'docker build .'
                    }
 		}
