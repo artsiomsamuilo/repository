@@ -3,6 +3,9 @@
 properties([disableConcurrentBuilds()])
 
 pipeline {
+    agent {
+     lable 'master'
+}
     options
           {
       buildDiscarder(logRotator(numToKeepStr: '10', artifactNumToKeepStr: '10'))
