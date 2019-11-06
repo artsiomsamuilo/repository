@@ -1,5 +1,5 @@
 [staging_servers]
-172.20.90.41 owner=Artsiom
+172.20.90.41 owner=asamuila
 
 [staging_ALL:children]
 staging_servers
