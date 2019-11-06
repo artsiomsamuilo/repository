@@ -7,7 +7,7 @@
       Text Line2, in file1
       Text Line3, {{ mytext }}
 
- - name: Create files2
+ - name: Create files2 create
    copy:
     dest: /home/secret/file2.txt
     content: |
