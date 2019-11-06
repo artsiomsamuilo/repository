@@ -1,0 +1,49 @@
+# Run: ansible-playbook -i hosts threatstack-agent.re-deploy.unix.yml --extra-vars "user=username" -k -K
+# Run with debug mode: ansible-playbook -i hosts threatstack-agent.re-deploy.unix.yml -k -K -e '{ debug: True }'
+
+- hosts: threatstack-agents
+  become: yes
+  gather_facts: false
+
+  tasks:
+    - name: Check ThreatStack daemon status
+      shell: tsagent status | grep -q 'DOWN Threat Stack Agent Daemon' && echo 'Down' || echo 'Up'
+      register: ts_status
+      changed_when: "ts_status.stdout == 'Down'"
+
+    - block: #======== if  ts_status.stdout == 'Down' ========
+      - debug:
+          var: ts_status
+
+      - name: Copy logs from /opt/threatstak/log/
+        fetch: 
+          src: "/opt/threatstak/log/tsagentd.log"
+          dest: "/home/{{ user }}/ts-logs/{{ inventory_hostname }}/tsagentd.log"
+          flat: True
+             
+      - name: Remove ThreatStack packages and configuration files
+        action: apt purge=yes name=threatstack-agent state=absent
+     
+      - name: Reinstallation of TheatStack agent
+        action: apt name=threatstack-agent state=latest
+     
+      - name: Setup 'deploy-key' and 'ruleset' for the ThreatStack agent
+        shell: tsagent setup --deploy-key=b28c4e4a2e718e403ad7415f989491adf678cc3ace8845e7a8cb480d1ee58a98 --ruleset="Base Rule Set,Insight Rule Set,SOC-2 Rule Set,Docker Rule Set"
+        register: ts_setup
+      
+      - debug:
+        var: ts_setup
+      
+      - name: Start ThreatStack daemon
+        action: systemd name=threatstack state=started
+
+      when: "ts_status.stdout == 'Down'"
+
+    - name: Check ThreatStack daemon status
+      shell: tsagent status | grep -q 'DOWN Threat Stack Agent Daemon' && echo 'Down' || echo 'Up'
+      register: ts_reinstall_status
+      changed_when: "ts_reinstall_status.stdout == 'Down'"
+
+    - debug:
+        var: ts_reinstall_status
+      when: "debug is defined"
