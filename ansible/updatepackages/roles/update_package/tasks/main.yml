@@ -1,9 +1,12 @@
 ---
 # tasks file for update_package
-- name: Check package status
-  shell: dpkg-query -l | grep libsqlite3-0:amd64
-  register: libsql_status
-  changed_when: "libsql_status.stdout == '3.22.0-1ubuntu0.1'"
+- name: Check version of package
+  shell: dpkg-query -l | grep -q '3.22.0-1ubuntu0.2'  && echo 'Latest' || echo 'Old'
+  register: update_status
+  changed_when: "update_status.stdout == 'Old'"
 
 - include_tasks: update.yml
-  when: "libsql_status.stdout == '3.22.0-1ubuntu0.1'"
+  when: "update_status.stdout == 'Old'"
+
+...
+
