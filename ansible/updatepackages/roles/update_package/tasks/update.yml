@@ -1,0 +1,20 @@
+---
+
+- name: Upgrade package to the latest version
+  become: true
+  apt:
+    name: "{{ package }}"
+    state: latest
+    update_cache: yes
+    cache_valid_time: '{{ cache_valid_time }}'
+    only_upgrade: yes
+  when: "libsql_status.stdout == '3.22.0-1ubuntu0.1'"
+
+- name: Check version of package
+  shell: dpkg-query -l | grep -q '3.22.0-1ubuntu0.1' && echo 'Error' || echo 'OK'
+  register: update_status
+  changed_when: "update_status == 'Error'"
+
+- debug:
+    var: update_status.stdout
+...

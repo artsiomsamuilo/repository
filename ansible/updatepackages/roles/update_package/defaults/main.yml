@@ -1,0 +1,4 @@
+---
+# defaults file for update_package
+package: libsqlite3-0
+cache_valid_time: 3600
