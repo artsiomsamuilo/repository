@@ -1,4 +1,5 @@
 ---
 # defaults file for update_package
 package: libsqlite3-0
+version: 3.22.0-1ubuntu0.2
 cache_valid_time: 3600
