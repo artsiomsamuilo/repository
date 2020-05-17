@@ -1,0 +1,13 @@
+---
+- hosts: all
+  become: yes
+
+
+  vars_files:
+    - "{{ month }}.yml"
+
+  tasks:
+
+    - name: update packages
+      include_tasks: pat.yml
+      loop: '{{ package }}'

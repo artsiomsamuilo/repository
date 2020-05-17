@@ -1,0 +1,72 @@
+---
+
+- name: Gather the apt package facts
+  package_facts:
+    manager: auto
+
+- name: Print the apt package facts
+  debug:
+    var: ansible_facts.packages['{{ item.name }}']
+
+- block:   # only for linux-image and linux-image-aws packages
+
+  - name: Linux-image update
+    debug:
+      msg: "{{ item.oldversion }} are installed NOW. {{ item.name }} is installing"
+    when: item.oldversion in ansible_facts.packages   
+
+  - name: Install package {{ item.name }} to the "{{ item.version }}' version
+    become: true
+    apt:
+      name: '{{ item.name }}={{ item.version }}'
+      update_cache: yes
+      cache_valid_time: 3600
+    when: item.oldversion in ansible_facts.packages  
+
+  when: item.name not in ansible_facts.packages and item.oldversion is defined
+
+
+- block:   # upgrade if package was installed, or install if it is exception
+
+  - name: Сhecking the version of the called package {{ item.name }}
+    debug:
+      msg: "{{ ansible_facts.packages[(item.name)][0].version }} versions of {{ item.name }} are installed NOW!"
+    when: item.name in ansible_facts.packages
+
+  - name: Print the name of the package to be installed.
+    debug:
+      msg: "{{ item.name}} wiil be install because it is exception" 
+    when: item.exception is defined    
+
+  - name: Upgrade package {{ item.name }} to the "{{ item.version }}' version
+    become: true
+    apt:
+      name: '{{ item.name }}={{ item.version}}'
+      update_cache: yes
+      cache_valid_time: 3600
+
+  when: item.name in ansible_facts.packages or item.exception is defined
+
+- block: # remove package
+
+  - name: Show package for remove
+    debug:
+      msg: "{{ item.name }} is removing  NOW!"
+
+  - name: Remove package from server
+    become: true
+    apt:
+      name: "{{ item.name }}"
+      state: absent
+
+  when: item.name in ansible_facts.packages and item.absent is defined
+
+
+- name: Repeat gather the apt package facts
+  package_facts:
+    manager: auto
+
+- name: Last check whether a package called {{ item.name }} is installed
+  debug:
+    msg: "{{ ansible_facts.packages[(item.name)][0].version }} version of {{ item.name }} are installed NOW!"
+  when: item.name in ansible_facts.packages
